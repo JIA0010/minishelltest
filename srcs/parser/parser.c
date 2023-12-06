@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   parser.c                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: yoshimurahiro <yoshimurahiro@student.42    +#+  +:+       +#+        */
+/*   By: cjia <cjia@student.42tokyo.jp>             +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/08 13:09:42 by yoshimurahi       #+#    #+#             */
-/*   Updated: 2023/12/06 10:37:41 by yoshimurahi      ###   ########.fr       */
+/*   Updated: 2023/12/06 11:27:41 by cjia             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,6 +36,7 @@ static t_simple_cmds	*creat_ast(t_parser_tools *parser_tools)
 	t_lexer	*tmp;
     
     grouping_redirections(parser_tools);
+    
     arg_size = count_args(parser_tools->lexer_list);
     str = ft_calloc(arg_size + 1, sizeof(char *));
     if (!str)
