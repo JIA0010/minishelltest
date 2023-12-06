@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   change_to_array.c                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: yoshimurahiro <yoshimurahiro@student.42    +#+  +:+       +#+        */
+/*   By: cjia <cjia@student.42tokyo.jp>             +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/01 11:51:33 by yoshimurahi       #+#    #+#             */
-/*   Updated: 2023/12/06 10:19:56 by yoshimurahi      ###   ########.fr       */
+/*   Updated: 2023/12/06 11:03:22 by cjia             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -144,9 +144,10 @@ int		process_str(char **tmparray, t_simple_cmds *tmp, int i)
 			free(tmpstr);
 			tmpstr = ft_strdup(tmparray[i]);
 			k++;
-			i++;
 		}
-		free(tmpstr);
+		if(tmpstr)
+			free(tmpstr);
+		i++;
 	}
 	return (i);
 }
