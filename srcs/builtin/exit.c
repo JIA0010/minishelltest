@@ -3,14 +3,15 @@
 /*                                                        :::      ::::::::   */
 /*   exit.c                                             :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: toshota <toshota@student.42tokyo.jp>       +#+  +:+       +#+        */
+/*   By: cjia <cjia@student.42tokyo.jp>             +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/20 11:39:21 by toshota           #+#    #+#             */
-/*   Updated: 2023/12/02 23:17:27 by toshota          ###   ########.fr       */
+/*   Updated: 2023/12/07 16:31:12 by cjia             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "builtin.h"
+#include "expander.h"
 
 static int	get_exit_argc(char **cmd)
 {
@@ -36,7 +37,6 @@ static bool	is_cmd_arg_num(char *cmd_arg)
 	return (*cmd_arg == '\0');
 }
 
-// https://itpfdoc.hitachi.co.jp/manuals/3020/30203S3530/JPAS0289.HTM
 int	exec_exit(char **cmd, t_pipex *pipex)
 {
 	if (get_cmd_absolute_path_count(pipex) != 1)
@@ -48,19 +48,14 @@ int	exec_exit(char **cmd, t_pipex *pipex)
 			return (put_error("bash: exit: too many arguments\n"), false);
 		if (is_cmd_arg_num(cmd[1]) == false)
 		{
-			put_error("bash: exit: ");
+			put_error("minishell: exit: ");
 			put_error(cmd[1]);
 			put_error(": numeric argument required\n");
-			exit(1);
+			exit(255);
 		}
 		exit((unsigned char)ft_atoi(cmd[1]));
 	}
 	else
-	{
-		/* exitの引数を指定しなかった場合，最後に実行したコマンドの終了コードを戻り値としてシェルを終了する．これを実装する！ */
-		// $?を展開する
-		// $?をexit();関数の引数に入れてexitする
-		exit(0);
-	}
+		exit(g_global.error_num);
 	return (true);
 }

@@ -3,25 +3,28 @@
 /*                                                        :::      ::::::::   */
 /*   parser_utils.c                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: yoshimurahiro <yoshimurahiro@student.42    +#+  +:+       +#+        */
+/*   By: cjia <cjia@student.42tokyo.jp>             +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/08 13:09:49 by yoshimurahi       #+#    #+#             */
-/*   Updated: 2023/12/05 19:48:37 by yoshimurahi      ###   ########.fr       */
+/*   Updated: 2023/12/07 17:17:17 by cjia             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../../inc/parser.h"
+#include "pipex.h"
 
 t_simple_cmds	*recreated_node(char **str,
-	int num_redirections, t_lexer *redirections)
+								int num_redirections,
+								t_lexer *redirections)
 {
 	t_simple_cmds	*new_element;
 
-	new_element = (t_simple_cmds *)malloc(sizeof(t_simple_cmds));
+	new_element = (t_simple_cmds *)check_malloc(malloc(sizeof(t_simple_cmds)));
+	printf("str = %p\n", *str);
 	if (!new_element)
 		return (0);
 	new_element->str = str;
-	new_element->file_name = NULL;
+	// all_free_tab(new_element->str);
 	new_element->num_redirections = num_redirections;
 	new_element->redirections = redirections;
 	new_element->next = NULL;
@@ -35,13 +38,16 @@ int	count_args(t_lexer *lexer_list)
 	int		i;
 
 	i = 0;
-	if(!lexer_list)
+	if (!lexer_list)
 		return (0);
 	tmp = lexer_list;
-	while (tmp && tmp->token != PIPE)
+	while (tmp && tmp->token != PIPE && tmp->token != AND_AND
+		&& tmp->token != OR_OR && tmp->token != SEMICOLON)
 	{
 		if (tmp->i >= 0)
 			i++;
+		if (tmp->next == NULL)
+			break ;
 		tmp = tmp->next;
 	}
 	return (i);
@@ -70,11 +76,11 @@ static void	ft_lexerdel_first(t_lexer **lst)
 		(*lst)->prev = NULL;
 }
 
-void erase_token(t_lexer **lexer_list, int i)
+void	erase_token(t_lexer **lexer_list, int i)
 {
-    t_lexer	*node;
-	t_lexer	*prev;
-	t_lexer	*start;
+	t_lexer *node;
+	t_lexer *prev;
+	t_lexer *start;
 
 	start = *lexer_list;
 	node = start;

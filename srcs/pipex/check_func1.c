@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   check_func1.c                                      :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: toshota <toshota@student.42tokyo.jp>       +#+  +:+       +#+        */
+/*   By: toshota <toshota@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/24 12:14:49 by toshota           #+#    #+#             */
-/*   Updated: 2023/11/23 23:26:44 by toshota          ###   ########.fr       */
+/*   Updated: 2023/12/06 14:23:14 by toshota          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,11 +22,20 @@ void	*check_malloc(void *ptr)
 	return (ptr);
 }
 
-bool	check_open(int fd)
+bool	check_open(int fd, char *file)
 {
+	struct stat	st;
+
 	if (fd == -1)
 	{
-		put_error("failed to open\n");
+		if (stat(file, &st) < 0)
+			return (false);
+		else if (S_ISDIR(st.st_mode))
+			return (put_error_w_file(file, "Is a directory"), false);
+		if (file)
+			put_file_error(NULL, file);
+		else
+			put_error("failed to open\n");
 		return (false);
 	}
 	return (true);

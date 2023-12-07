@@ -6,7 +6,7 @@
 /*   By: toshota <toshota@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/17 09:29:26 by toshota           #+#    #+#             */
-/*   Updated: 2023/12/04 12:53:28 by toshota          ###   ########.fr       */
+/*   Updated: 2023/12/07 13:39:41 by toshota          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,30 +27,36 @@
 # define OUTFILE_APEND 3
 # define NOT_SPECIFIED 0
 # define NOT_FOUND -1
+# define IS_A_DIRECTORY -2
+# define IS_DOT -3
 
 int		open_file(char *file, int file_type);
 bool	close_pipe(int *pipe_fd);
 void	all_free_tab(char **ptr);
 void	all_free_int(int **ptr);
-void	put_error(char *err_msg);
 size_t	strlen_until_c(char *str, char c);
 void	*check_malloc(void *ptr);
 bool	check_getenv(char *ptr);
-bool	check_open(int ret);
+bool	check_open(int fd, char *file);
 bool	check_close(int ret);
 bool	check_pipe(int ret);
 bool	check_fork(pid_t child_pid);
 bool	check_dup(int ret);
-bool	check_exec(int ret);
+bool	check_execve(int ret);
+bool	check_exec_builtin(int ret);
 bool	check_wait(int ret);
 bool	check_unlink(int ret);
 bool	is_path_found(char *path);
+bool	is_parameter_file(char *cmd_parameter);
+bool	is_parameter_dir(char *cmd_parameter);
 int		get_cmd_count(char **argv);
 int		get_cmd_absolute_path_count(t_pipex *pipex);
 int		get_pipe_count(char **argv);
 int		get_builtin_cmd_count(t_pipex *pipex);
 void	get_order(t_env *node);
 int		is_cmd(char **argv, int arg_i);
+bool	is_specified_redirect(char *str);
+bool	is_io_file(char **argv, int arg_i);
 bool	get_cmd_absolute_path(char **argv, t_pipex *pipex);
 bool	add_absolute_path_to_cmd_name(char ***cmd_absolute_path);
 char	**add_slash_eos(char **path);
@@ -92,7 +98,7 @@ bool	is_specified_apersant_ampersant(char *str);
 // set_fd
 bool	set_input_fd(t_pipex *pipex, int cmd_i, char **argv);
 bool	set_output_fd(t_pipex *pipex, int cmd_i, char **argv);
-bool	reset_fd(t_pipex *pipex, int *stdin_fileno, int *stdout_fileno);
+bool	reset_fd(int *stdin_fileno, int *stdout_fileno);
 
 // array_node
 t_env	*array_to_node(char **envp);
@@ -112,14 +118,23 @@ int		ft_nodesize(t_env *node);
 void	put_node_for_debug(t_env *node);
 
 // loop_pipex
-int		loop_pipex(char **argv, t_env **env);
+int		loop_pipex(char **argv, char **envp, t_env **env);
 void	get_loop_pipex(char **argv, char ****splitted_argv, char ***splitter);
-int		do_loop_pipex(char ***splitted_argv, char **splitter, t_env **env);
+int		do_loop_pipex(char ***splitted_argv, char **splitter, char **envp,
+			t_env **env);
 void	end_loop_pipex(char ***splitted_argv, char **splitter);
 char	***get_splitted_argv(char **argv);
 char	**get_splitter(char **argv);
 int		get_splitter_count(char **argv);
 int		is_specified_splitter(char *str);
 bool	is_splitter_exist(char **argv);
+
+// put_error
+void	put_error(char *err_msg);
+void	put_error_w_cmd(char *filename, char *error_msg);
+void	put_error_w_file(char *file, char *error_msg);
+void	put_error_w_cmd_filename(char *cmdname, char *filename,
+			char *error_msg);
+int		put_file_error(char *cmd, char *file);
 
 #endif

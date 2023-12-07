@@ -3,17 +3,18 @@
 /*                                                        :::      ::::::::   */
 /*   about_error.c                                      :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: yoshimurahiro <yoshimurahiro@student.42    +#+  +:+       +#+        */
+/*   By: cjia <cjia@student.42tokyo.jp>             +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/22 13:17:23 by yoshimurahi       #+#    #+#             */
-/*   Updated: 2023/12/06 10:19:52 by yoshimurahi      ###   ########.fr       */
+/*   Updated: 2023/12/06 17:48:51 by cjia             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 # include "../inc/minishell.h"
 
-int	ft_error(int error, t_tools *tools)
+int	ft_error(int error)
 {
+	g_global.error_num = 1;
 	ft_putstr_fd("minishell: ", STDERR_FILENO);
 	if (error == 0)
 		ft_putstr_fd("syntax error near unexpected token 'newline'\n",
@@ -31,10 +32,10 @@ int	ft_error(int error, t_tools *tools)
 	return (EXIT_FAILURE);
 }
 
-void	parser_error(int error, t_tools *tools, t_lexer *lexer_list)
+void	parser_error(int error, t_lexer *lexer_list)
 {
 	ft_lexerclear(&lexer_list);
-	ft_error(error, tools);
+	ft_error(error);
 }
 
 int	parser_token_error(t_tools *tools, t_lexer *lexer_list,
@@ -52,8 +53,8 @@ int	parser_token_error(t_tools *tools, t_lexer *lexer_list,
 		ft_putstr_fd("'<<'\n", STDERR_FILENO);
 	else if (token == PIPE)
 		ft_putstr_fd("'|'\n", STDERR_FILENO);
-	// else if (token == SEMICOLON)
-	// 	ft_putstr_fd("';'\n", STDERR_FILENO);
+	else if (token == SEMICOLON)
+		ft_putstr_fd("';'\n", STDERR_FILENO);
 	else if (token == AND_AND)
 		ft_putstr_fd("'&&'\n", STDERR_FILENO);
 	else if (token == OR_OR)
@@ -75,7 +76,7 @@ int	handle_operator_error(t_tools *tools, t_tokens token)
 	}
 	if (!tools->lexer_list)
 	{
-		parser_error(0, tools, tools->lexer_list);
+		parser_error(0, tools->lexer_list);
 		return (EXIT_FAILURE);
 	}
 	return (EXIT_SUCCESS);

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   do_pipex.c                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: toshota <toshota@student.42tokyo.jp>       +#+  +:+       +#+        */
+/*   By: cjia <cjia@student.42tokyo.jp>             +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/25 22:46:35 by toshota           #+#    #+#             */
-/*   Updated: 2023/12/02 00:26:50 by toshota          ###   ########.fr       */
+/*   Updated: 2023/12/06 16:31:44 by cjia             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,20 +33,20 @@ static bool	exec(char **argv, t_env **env, t_pipex *pipex, int cmd_i)
 
 	dup_std_fileno(&stdin_fileno, &stdout_fileno);
 	if (set_input_fd(pipex, cmd_i, argv) == false)
-		return (reset_fd(pipex, &stdin_fileno, &stdout_fileno), false);
+		return (reset_fd(&stdin_fileno, &stdout_fileno), false);
 	if (set_output_fd(pipex, cmd_i, argv) == false)
-		return (reset_fd(pipex, &stdin_fileno, &stdout_fileno), false);
+		return (reset_fd(&stdin_fileno, &stdout_fileno), false);
 	if (is_cmd_builtin(pipex->cmd_absolute_path[cmd_i]))
 	{
-		if (exec_builtin(env, pipex, cmd_i) == false)
-			return (reset_fd(pipex, &stdin_fileno, &stdout_fileno), false);
-		return (reset_fd(pipex, &stdin_fileno, &stdout_fileno));
+		if (check_exec_builtin(exec_builtin(env, pipex, cmd_i)) == false)
+			return (reset_fd(&stdin_fileno, &stdout_fileno), false);
+		return (reset_fd(&stdin_fileno, &stdout_fileno));
 	}
 	else
 	{
 		cmd = check_malloc \
 		(ft_split(pipex->cmd_absolute_path_with_parameter[cmd_i], ' '));
-		return (check_exec \
+		return (check_execve \
 		(execve(pipex->cmd_absolute_path[cmd_i], cmd, environ)));
 	}
 }
