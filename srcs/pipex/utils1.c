@@ -6,7 +6,7 @@
 /*   By: toshota <toshota@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/24 12:14:49 by toshota           #+#    #+#             */
-/*   Updated: 2023/12/05 20:47:53 by toshota          ###   ########.fr       */
+/*   Updated: 2023/12/10 22:27:11 by toshota          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,4 +42,31 @@ void	get_order(t_env *node)
 		node = node->next;
 		ft_nodefirst(&test);
 	}
+}
+
+char	*getenv_from_h_envp(char **h_envp, char *varname)
+{
+	int	he_i;
+	int	varname_len;
+
+	he_i = 0;
+	varname_len = ft_strlen(varname);
+	while (h_envp[he_i])
+	{
+		if (ft_strlen(h_envp[he_i]) > 0 && !ft_strncmp(h_envp[he_i],
+				varname, varname_len))
+			break ;
+		he_i++;
+	}
+	return (h_envp[he_i]);
+}
+
+char	*getenv_from_t_env(t_env *env, char *varname)
+{
+	while (env->next && ft_strncmp(env->content, varname, ft_strlen(varname)))
+		ft_nodenext(&env);
+	if (!ft_strncmp(env->content, varname, ft_strlen(varname)))
+		return (env->content);
+	else
+		return (NULL);
 }

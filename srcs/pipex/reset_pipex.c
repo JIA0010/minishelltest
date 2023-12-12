@@ -1,41 +1,24 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   check_func3.c                                      :+:      :+:    :+:   */
+/*   reset_pipex.c                                      :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: toshota <toshota@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2023/12/05 12:04:48 by toshota           #+#    #+#             */
-/*   Updated: 2023/12/09 19:22:10 by toshota          ###   ########.fr       */
+/*   Created: 2023/12/09 21:55:41 by toshota           #+#    #+#             */
+/*   Updated: 2023/12/09 21:56:00 by toshota          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "pipex.h"
 
-bool	check_execve(int ret, char *cmd)
+bool	reset_pipex(t_pipex *pipex, int cmd_i)
 {
-	if (ret == -1 || ret == false)
-	{
-		if (errno != 0)
-			put_error_w_cmd(cmd, strerror(errno));
-		else
-			put_error("failed to execve\n");
-		g_global.error_num = 126;
-		exit(126);
-	}
-	return (true);
-}
-
-bool	check_exec_builtin(int ret, char *cmd)
-{
-	if (ret == -1 || ret == false)
-	{
-		if (errno != 0)
-			put_error_w_cmd(cmd, strerror(errno));
-		else
-			put_error("failed to exec_builtin\n");
-		g_global.error_num = 126;
+	pipex->infile_fd = STDIN_FILENO;
+	pipex->outfile_fd = STDOUT_FILENO;
+	if (rm_here_doc() == false)
 		return (false);
-	}
+	if (cmd_i > 0 && close_pipe(pipex->pipe_fd[cmd_i - 1]) == false)
+		return (false);
 	return (true);
 }

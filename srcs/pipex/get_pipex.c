@@ -44,17 +44,17 @@ int	get_pipe_count(char **argv)
 	return (pipe_count);
 }
 
-static void	malloc_multiple_pipe(char **argv, t_pipex *pipex)
+static void	malloc_multiple_pipe(t_pipex *pipex)
 {
 	int	i;
 	int	pipe_count;
 
 	i = 0;
-	pipe_count = get_pipe_count(argv);
+	pipe_count = get_pipe_count(pipex->argv);
 	if (pipe_count == 0)
 		return ;
-	pipex->pipe_fd = \
-	(int **)check_malloc(malloc(sizeof(int *) * (pipe_count + 1)));
+	pipex->pipe_fd = (int **)check_malloc \
+	(malloc(sizeof(int *) * (pipe_count + 1)));
 	while (i < pipe_count)
 	{
 		pipex->pipe_fd[i] = (int *)check_malloc(malloc(sizeof(int) * 2));
@@ -63,30 +63,23 @@ static void	malloc_multiple_pipe(char **argv, t_pipex *pipex)
 	pipex->pipe_fd[i] = NULL;
 }
 
-static void	init_pipex(t_pipex *pipex)
+static bool	init_pipex(t_pipex *pipex)
 {
 	ft_bzero(pipex, sizeof(t_pipex));
 	pipex->infile_fd = STDIN_FILENO;
 	pipex->outfile_fd = STDOUT_FILENO;
+	return (rm_here_doc());
 }
 
-bool	get_pipex(char **argv, t_pipex *pipex)
+bool	get_pipex(char **argv, char **h_envp, t_pipex *pipex)
 {
-	init_pipex(pipex);
-	if (get_cmd_absolute_path(argv, pipex) == false)
+	if (init_pipex(pipex) == false)
 		return (false);
-	if (get_cmd_absolute_path_count(pipex) == 0)
-	{
-		if (get_infile_fd(pipex, 0, argv, true) == false)
-			return (false);
-	}
-	else
-	{
-		if (get_infile_fd(pipex, 0, argv, false) == false)
-			return (false);
-	}
-	if (get_outfile_fd(pipex, 0, argv) == false)
+	cp_argv(argv, pipex);
+	if (get_fd(pipex, argv, h_envp) == false)
 		return (false);
-	malloc_multiple_pipe(argv, pipex);
+	if (get_cmd_absolute_path(h_envp, pipex) == false)
+		return (false);
+	malloc_multiple_pipe(pipex);
 	return (true);
 }

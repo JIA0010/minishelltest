@@ -13,6 +13,16 @@ static void	put_arg_for_debug(char **argv)
 		ft_printf("\n");
 }
 
+void	put_array_for_debug(char **str)
+{
+	while(*str)
+	{
+		ft_printf(">>>\t[%s]\n", *str);
+		str++;
+	}
+}
+
+
 void	put_node_for_debug(t_env *node)
 {
 	while (node->next)
@@ -29,15 +39,15 @@ void	add_shlvl(t_env **env)
 	int		shlvl_nb;
 	char	*shlvl_str;
 
-	if (getenv("SHLVL") == NULL)
+	if (getenv_from_t_env(*env, "SHLVL=") == NULL)
 		return ;
-	shlvl_nb = ft_atoi(getenv("SHLVL"));
+	shlvl_nb = ft_atoi(getenv_from_t_env(*env, "SHLVL=") + ft_strlen("SHLVL="));
 	shlvl_str = check_malloc(ft_itoa(shlvl_nb + 1));
 	update_envp(env, "SHLVL=", shlvl_str);
 	free(shlvl_str);
 }
 
-void	add_basic_shell_variables(char **envp)
+void	add_basic_shell_variables(t_env **env)
 {
 	char	cwd[PATH_MAX];
 	char	*cwd_w_varname;
@@ -45,17 +55,24 @@ void	add_basic_shell_variables(char **envp)
 	if (getcwd(cwd, PATH_MAX) == NULL)
 		return ;
 	cwd_w_varname = check_malloc(ft_strjoin("PWD=", cwd));
-	envp[0] = check_malloc(ft_strdup(cwd_w_varname));
-	envp[1] = check_malloc(ft_strdup("SHLVL=0"));
-	envp[2] = NULL;
+
+	*env = ft_nodenew(cwd_w_varname);
+	ft_nodeadd_back(env, ft_nodenew("SHLVL=0"));
+	ft_nodeadd_back(env, ft_nodenew("_=./minishell"));
+// envp[0] = check_malloc(ft_strdup(cwd_w_varname));
+// envp[1] = check_malloc(ft_strdup("SHLVL=0"));
+// envp[2] = check_malloc(ft_strdup("_=./minishell"));
+// envp[3] = NULL;
 	free(cwd_w_varname);
 }
 
 void	init_minishell(char **envp, t_env **env)
 {
+// envp[0] = NULL;
 	if (envp[0] == NULL)
-		add_basic_shell_variables(envp);
-	*env = array_to_node(envp);
+		add_basic_shell_variables(env);
+	else
+		*env = array_to_node(envp);
 	add_shlvl(env);
 	get_order(*env);
 }
@@ -78,10 +95,11 @@ int	minipipex(char **argv, char **envp)
 		/* 本来はft_splitでなくlexerとparser．いまは区切り文字','で分割している */
 		if (*line)
 			add_history(line);
+		put_arg_for_debug(argv);
 		if (is_match(line, "putnode"))
 			put_node_for_debug(env);
 		else
-			loop_pipex(argv, envp, &env);
+			loop_pipex(argv, &env);
 		all_free_tab(argv);
 		free(line);
 	}
@@ -89,7 +107,7 @@ int	minipipex(char **argv, char **envp)
 	ft_printf(EXIT_MSG);
 	return (0);
 }
-
+// /*
 int	process_input(t_tools *tools)
 {
 	if (lexer(tools) == EXIT_FAILURE)
@@ -103,80 +121,92 @@ int	process_input(t_tools *tools)
 				tools->lexer_list->token) == EXIT_FAILURE)
 			return (0);
 	}
-	if (tools->lexer_list->str[0] == '\0')
-		return (0);
-	if (parser(tools) == EXIT_FAILURE)
+	if (tools->lexer_list->token == 0 && tools->lexer_list->str[0] == '\0')
 	{
 		free_tools(tools);
+		ft_lexerclear(&tools->lexer_list);
+		return (0);
+	}
+	if (parser(tools) == EXIT_FAILURE)
+	{
 		return (0);
 	}
 	return (1);
 }
 
-void	check_exit(t_tools *tools, char **argv, char **envp, t_env **env)
+void	ft_nodefirst_cmdsver(t_simple_cmds **node)
 {
-	int	i;
+	if (node == NULL || *node == NULL)
+		return ;
+	while ((*node)->prev != NULL)
+		*node = (*node)->prev;
+}
 
-	i = 0;
-	while (tools->simple_cmds)
+void	check_exit(t_tools *tools, char **argv, t_env **env)
+{
+	t_simple_cmds	*node;
+
+	node = tools->simple_cmds;
+	while (node && node->str)
 	{
-		if (is_match(tools->simple_cmds->str[0], "exit") == true)
+		if (is_match(node->str[0], "exit") == true)
 		{
 			free_tools(tools);
 			argv = check_malloc(ft_split("exit", ':'));
-			g_global.error_num = loop_pipex(argv, envp, env);
+			g_global.error_num = loop_pipex(argv, env);
 		}
-		tools->simple_cmds = tools->simple_cmds->next;
+		node = node->next;
 	}
 }
 
-int	handle_input(t_tools *tools, char **envp, t_env **env, char **argv)
+int	handle_input(t_tools *tools, t_env **env, char **argv)
 {
-	char	*line;
+	char **h_envp;
 
-	line = readline(MINISHELL_PROMPT);
-	tools->str = line;
-	if (!line)
-	{
-		free_tools(tools);
-		return (0);
-	}
 	if (tools->str[0] != '\0')
 	{
 		if (!process_input(tools))
-			return (0);
+			return (false);
 		signal(SIGQUIT, sigquit_handler);
 		tools->tmp_array = change_to_array(tools);
-		tools->simple_cmds->str = expander(tools, tools->tmp_array);
-		if (*tools->str)
-			add_history(tools->str);
+		h_envp = node_to_array(*env);
+		tools->simple_cmds->str = expander(tools, tools->tmp_array, h_envp);
+		all_free_tab(h_envp);
 		put_arg_for_debug(tools->tmp_array);
-		check_exit(tools, argv, envp, env);
-		g_global.error_num = loop_pipex(tools->tmp_array, envp, env);
-		node_to_array(*env, &tools->envp);
+		g_global.in_cmd = 1;
+		check_exit(tools, argv, env);
+		g_global.error_num = loop_pipex(tools->tmp_array, env);
 		free_tools(tools);
+		g_global.in_cmd = 0;
+		return (true);
 	}
-	return (1);
+	free_tools(tools);
+	return (false);
 }
 
 int	minishell(char **envp, t_tools *tools, char **argv)
 {
 	t_env	*env;
-
+	char    *line;
 	init_minishell(envp, &env);
 	while (true)
 	{
+		signal_init();
+		line = readline(MINISHELL_PROMPT);
+		if (!line)
+			break ;
 		tools = (t_tools *)check_malloc(malloc(sizeof(t_tools)));
-		if (implement_tools(tools) == 0)
-			exit(EXIT_FAILURE);
-		tools->envp = ft_arrdup(envp);
-		handle_input(tools, envp, &env, argv);
+		implement_tools(tools);
+		tools->str = line;
+		if (*tools->str)
+			add_history(tools->str);
+		handle_input(tools, &env, argv);
 	}
 	ft_nodeclear(&env);
 	ft_printf(EXIT_MSG);
 	return (0);
 }
-
+// */
 int	main(int argc, char **argv, char **envp)
 {
 	t_tools	tools;

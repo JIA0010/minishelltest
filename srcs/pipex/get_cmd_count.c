@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   get_cmd_count.c                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: toshota <toshota@student.42.fr>            +#+  +:+       +#+        */
+/*   By: toshota <toshota@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/05 09:00:12 by toshota           #+#    #+#             */
-/*   Updated: 2023/12/07 13:26:53 by toshota          ###   ########.fr       */
+/*   Updated: 2023/12/10 22:27:11 by toshota          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -40,7 +40,7 @@ static void	check_is_dot(int ret)
 	}
 }
 
-int	get_cmd_count(char **argv)
+int	get_cmd_count(char **argv, char **h_envp)
 {
 	int		cmd_count;
 	int		arg_i;
@@ -53,7 +53,7 @@ int	get_cmd_count(char **argv)
 	{
 		argv_wo_param = check_malloc \
 		(ft_substr(argv[arg_i], 0, strlen_until_c(argv[arg_i], ' ')));
-		ret = is_cmd(argv, arg_i);
+		ret = is_cmd(argv, arg_i, h_envp);
 		if (ret == true)
 			cmd_count++;
 		check_is_dot(ret);

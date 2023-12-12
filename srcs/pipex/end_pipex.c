@@ -3,14 +3,21 @@
 /*                                                        :::      ::::::::   */
 /*   end_pipex.c                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: cjia <cjia@student.42tokyo.jp>             +#+  +:+       +#+        */
+/*   By: toshota <toshota@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/24 12:54:49 by toshota           #+#    #+#             */
-/*   Updated: 2023/12/07 15:25:19 by cjia             ###   ########.fr       */
+/*   Updated: 2023/12/09 22:35:36 by toshota          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "pipex.h"
+
+int	free_tab(char *ptr)
+{
+	free(ptr);
+	ptr = NULL;
+	return (0);
+}
 
 void	all_free_tab(char **ptr)
 {
@@ -44,11 +51,10 @@ void	all_free_int(int **ptr)
 
 bool	end_pipex(t_pipex *pipex)
 {
+	all_free_tab(pipex->argv);
 	all_free_tab(pipex->cmd_absolute_path);
 	all_free_tab(pipex->cmd_absolute_path_with_parameter);
 	all_free_int(pipex->pipe_fd);
-	if (is_file_exist(HERE_DOC_FILE_PATH))
-		if (check_unlink(unlink(HERE_DOC_FILE_PATH)) == false)
-			return (false);
+	rm_here_doc();
 	return (true);
 }

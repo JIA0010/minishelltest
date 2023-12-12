@@ -3,15 +3,16 @@
 /*                                                        :::      ::::::::   */
 /*   expander.c                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: toshota <toshota@student.42.fr>            +#+  +:+       +#+        */
+/*   By: cjia <cjia@student.42tokyo.jp>             +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/16 10:39:54 by yoshimurahi       #+#    #+#             */
-/*   Updated: 2023/12/06 16:23:48 by toshota          ###   ########.fr       */
+/*   Updated: 2023/12/08 14:27:57 by cjia             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "../../inc/expander.h"
-#include "../../inc/minishell.h"
+#include "expander.h"
+#include "minishell.h"
+#include "pipex.h"
 
 char	*delete_quotes(char *str, char c)
 {
@@ -49,8 +50,8 @@ int	handle_digit_after_dollar(int j, char *str)
 	return (j - i);
 }
 
-char	*detect_dollar(t_tools *tools, char *str)
-{//すでにシングルクオーとでないことがわかる
+char	*detect_dollar(char *str, char **envp)
+{
 	int		j;
 	char	*tmp;
 	char	*tmp2;
@@ -60,16 +61,16 @@ char	*detect_dollar(t_tools *tools, char *str)
 	tmp = ft_strdup("\0");
 	while (str[j])
 	{
-		j += handle_digit_after_dollar(j, str);//良くわからない
+		j += handle_digit_after_dollar(j, str);
 		if (str[j] == '$' && str[j + 1] == '?')
 			j += question_mark(&tmp);
 		else if (str[j] == '$' && (str[j + 1] != ' ' && (str[j + 1] != '"'
-					|| str[j + 2] != '\0')) && str[j + 1] != '\0')//ダブルクオート対策
-			j += loop_if_dollar_sign(tools, str, &tmp, j);//＄ ＆＆ !’　’ && $の次が"出ない時変数展開を行う
+						|| str[j + 2] != '\0')) && str[j + 1] != '\0')
+			j += loop_if_dollar_sign(envp, str, &tmp, j);
 		else
 		{
 			tmp2 = char_to_str(str[j++]);
-			tmp3 = ft_strjoin(tmp, tmp2);//一文字ずつtmpに追加していく
+			tmp3 = ft_strjoin(tmp, tmp2);
 			free(tmp);
 			tmp = tmp3;
 			free(tmp2);
@@ -78,7 +79,7 @@ char	*detect_dollar(t_tools *tools, char *str)
 	return (tmp);
 }
 
-char	**expander(t_tools *tools, char **str)
+char	**expander(t_tools *tools, char **str, char **envp)
 {
 	int		i;
 	char	*tmp;
@@ -87,30 +88,28 @@ char	**expander(t_tools *tools, char **str)
 	tmp = NULL;
 	while (str[i] != NULL)
 	{
-		if (find_dollar(str[i]) != 0 && str[i][find_dollar(str[i]) - 2] != '\'' &&
+		if (find_dollar(str[i]) != 0 && str[i][find_dollar(str[i]) - 2] != '\''
+			&&
 			str[i][find_dollar(str[i])] != '\0')
-		{//シングルクオート、空文字でないことがわかる
-			tmp = detect_dollar(tools, str[i]);
+		{
+			tmp = detect_dollar(str[i], envp);
 			free(str[i]);
 			str[i] = tmp;
 		}
-		if (ft_strncmp(str[0], "export", ft_strlen(str[0]) - 1) != 0)//exportコマンドの時はクオートを削除しない。そっちで使う。
+		if (ft_strncmp(str[0], "export", ft_strlen(str[0]) - 1) != 0)
 		{
 			str[i] = delete_quotes(str[i], '\"');
 			str[i] = delete_quotes(str[i], '\'');
 		}
 		i++;
 	}
+	while (tools->simple_cmds->str)
+	{
+		all_free_tab(tools->simple_cmds->str);
+		tools->simple_cmds->str = NULL;
+		if (tools->simple_cmds->next == NULL)
+			break ;
+		tools->simple_cmds = tools->simple_cmds->next;
+	}
 	return (str);
 }
-
-// int main(int argc, char **argv, char **envp)
-// {
-// 	t_tools tools;
-// 	tools.envp = ft_arrdup(envp);
-// 	char **str = (char **)malloc(sizeof(char *) * 3);
-// 	str[0] = "$HOME";
-// 	char **tmp;
-// 	tmp = expander(&tools, str);
-// 	printf("tmp[0] = %s\n", tmp[0]);
-// }

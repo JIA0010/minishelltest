@@ -3,14 +3,14 @@
 /*                                                        :::      ::::::::   */
 /*   about_error.c                                      :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: cjia <cjia@student.42tokyo.jp>             +#+  +:+       +#+        */
+/*   By: yoshimurahiro <yoshimurahiro@student.42    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/22 13:17:23 by yoshimurahi       #+#    #+#             */
-/*   Updated: 2023/12/06 17:48:51 by cjia             ###   ########.fr       */
+/*   Updated: 2023/12/09 22:56:43 by yoshimurahi      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-# include "../inc/minishell.h"
+#include "minishell.h"
 
 int	ft_error(int error)
 {
@@ -32,10 +32,13 @@ int	ft_error(int error)
 	return (EXIT_FAILURE);
 }
 
-void	parser_error(int error, t_lexer *lexer_list)
+void	parser_error(int error, t_tools *tools)
 {
-	ft_lexerclear(&lexer_list);
-	ft_error(error);
+	free_tools(tools);
+	// (void) tools;
+	// (void) lexer_list;
+	// ft_lexerclear(&lexer_list);
+	ft_error(error);    
 }
 
 int	parser_token_error(t_tools *tools, t_lexer *lexer_list,
@@ -61,7 +64,6 @@ int	parser_token_error(t_tools *tools, t_lexer *lexer_list,
 		ft_putstr_fd("'||'\n", STDERR_FILENO);
 	else
 		ft_putstr_fd("\n", STDERR_FILENO);
-	ft_lexerclear(&lexer_list);
 	free_tools(tools);
 	return (EXIT_FAILURE);
 }
@@ -76,7 +78,7 @@ int	handle_operator_error(t_tools *tools, t_tokens token)
 	}
 	if (!tools->lexer_list)
 	{
-		parser_error(0, tools->lexer_list);
+		parser_error(0, tools);
 		return (EXIT_FAILURE);
 	}
 	return (EXIT_SUCCESS);

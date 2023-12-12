@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   array_node.c                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: cjia <cjia@student.42tokyo.jp>             +#+  +:+       +#+        */
+/*   By: toshota <toshota@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/25 15:36:11 by toshota           #+#    #+#             */
-/*   Updated: 2023/12/07 16:41:40 by cjia             ###   ########.fr       */
+/*   Updated: 2023/12/10 22:27:11 by toshota          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,8 +24,6 @@ t_env	*array_to_node(char **envp)
 	while (envp[env_i])
 	{
 		new = check_malloc(ft_nodenew(envp[env_i]));
-		// printf("new->content = %p\n", new->content);
-		// printf("new = %p\n", new);
 		if (env_i == 0)
 			node = new;
 		else
@@ -35,16 +33,23 @@ t_env	*array_to_node(char **envp)
 	return (node);
 }
 
-void	node_to_array(t_env *env, char ***envp)
+char	**node_to_array(t_env *env)
 {
-	int	env_i;
+	int		env_i;
+	char	**h_envp;
 
 	env_i = 0;
-	while (envp[0][env_i] && env && env->next)
+	h_envp = (char **)check_malloc \
+	(malloc(sizeof(char *) * (ft_nodesize(env) + 1)));
+	while (env->next)
 	{
-		ft_strlcpy \
-		(envp[0][env_i], env->content, ft_strlen(env->content) + 1);
-		ft_nodenext(&env);
+		h_envp[env_i] = check_malloc(ft_strdup(env->content));
 		env_i++;
+		ft_nodenext(&env);
 	}
+	h_envp[env_i] = check_malloc(ft_strdup(env->content));
+	env_i++;
+	h_envp[env_i] = NULL;
+	ft_nodefirst(&env);
+	return (h_envp);
 }

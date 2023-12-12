@@ -3,19 +3,19 @@
 /*                                                        :::      ::::::::   */
 /*   define.h                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: toshota <toshota@student.42.fr>            +#+  +:+       +#+        */
+/*   By: toshota <toshota@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/31 13:12:10 by toshota           #+#    #+#             */
-/*   Updated: 2023/12/05 17:29:39 by toshota          ###   ########.fr       */
+/*   Updated: 2023/12/10 18:23:45 by toshota          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef DEFINE_H
 # define DEFINE_H
 
-# include <stdbool.h>
 # include <dirent.h>
 # include <errno.h>
+# include <stdbool.h>
 
 typedef enum e_file_type	t_file_type;
 typedef struct s_file		t_file;
@@ -51,6 +51,7 @@ typedef struct s_pipex
 	int						outfile_fd;
 	char					**cmd_absolute_path;
 	char					**cmd_absolute_path_with_parameter;
+	char					**argv;
 	int						**pipe_fd;
 }							t_pipex;
 
@@ -85,7 +86,10 @@ t_global					g_global;
 # define BOLD "\x1b[1m"
 # define DEFAULT "\x1b[0m\x1b[39m"
 
+// prompt
 # define MINISHELL_PROMPT "\x1b[32mminishell $ \x1b[0m\x1b[39m"
+# define HERE_DOC_PROMPT "> "
+
 # define EXIT_MSG "exit\n"
 
 #endif

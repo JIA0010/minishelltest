@@ -3,42 +3,61 @@
 /*                                                        :::      ::::::::   */
 /*   main_utils.c                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: cjia <cjia@student.42tokyo.jp>             +#+  +:+       +#+        */
+/*   By: yoshimurahiro <yoshimurahiro@student.42    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/29 11:36:00 by yoshimurahi       #+#    #+#             */
-/*   Updated: 2023/12/07 15:26:24 by cjia             ###   ########.fr       */
+/*   Updated: 2023/12/12 14:17:06 by yoshimurahi      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "../inc/minishell.h"
-#include "../inc/expander.h"
+#include "expander.h"
+#include "minishell.h"
+
+bool	ft_simple_cmdsclear(t_simple_cmds **simple_cmds)
+{
+	t_simple_cmds	*tmp;
+	t_lexer			*redirections_tmp;
+
+	if (!*simple_cmds)
+		return (false);
+	while (*simple_cmds)
+	{
+		tmp = (*simple_cmds)->next;
+		redirections_tmp = (*simple_cmds)->redirections;
+		ft_lexerclear(&redirections_tmp);
+		if ((*simple_cmds)->str)
+			all_free_tab((*simple_cmds)->str);
+		// free((*simple_cmds)->prev);
+		free(*simple_cmds);
+		*simple_cmds = tmp;
+	}
+	*simple_cmds = NULL;
+	return (true);
+}
 
 int	implement_tools(t_tools *tools)
 {
-	// ft_bzero(tools, sizeof(t_tools));
 	tools->simple_cmds = NULL;
 	tools->lexer_list = NULL;
 	tools->str = NULL;
-	tools->envp = NULL;
 	tools->tmp_array = NULL;
-	signal_init();
-
+	g_global.stop_heredoc = 0;
+	g_global.in_cmd = 0;
+	g_global.in_heredoc = 0;
 	return (1);
 }
 
-
 int	free_tools(t_tools *tools)
 {
-	ft_simple_cmdsclear(&tools->simple_cmds);
 	free(tools->str);
-	// all_free_tab(tools->tmp_array);
-	all_free_tab(tools->envp);
+	if (ft_simple_cmdsclear(&tools->simple_cmds) == false)
+		ft_lexerclear(&tools->lexer_list);
 	implement_tools(tools);
 	free(tools);
 	return (1);
 }
 
-char	**	ft_arrdup(char **arr)
+char	**ft_arrdup(char **arr)
 {
 	char	**rtn;
 	size_t	i;
@@ -73,9 +92,14 @@ void	ft_lexerclear(t_lexer **lst)
 	{
 		tmp = (*lst)->next;
 		if ((*lst)->str)
+		{
 			free((*lst)->str);
-		if(*lst)
+			(*lst)->str = NULL;
+		}
+		if (*lst)
+		{
 			free(*lst);
+		}
 		*lst = tmp;
 	}
 	*lst = NULL;
